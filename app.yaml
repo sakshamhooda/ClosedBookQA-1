@@ -2,7 +2,7 @@ runtime: python311
 service: closed-book-qa
 
 env_variables:
-  GOOGLE_API_KEY: "your-google-api-key-here"
+  GOOGLE_API_KEY: "AIzaSyBKT7rP9N214nLrNUY8VYv4jFPqbljaYvU"
 
 automatic_scaling:
   target_cpu_utilization: 0.6
