@@ -1,0 +1,25 @@
+# Streamlit for HF Spaces
+streamlit==1.28.1
+
+# FastAPI and server dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# RAG and ML dependencies
+google-generativeai==0.3.2
+langchain==0.1.0
+langchain-community==0.0.10
+langchain-google-genai==0.0.6
+faiss-cpu==1.7.4
+
+# Data processing
+ebooklib==0.18.2
+beautifulsoup4==4.12.2
+unstructured==0.11.8
+PyPDF2==3.0.1
+lxml==4.9.3
+
+# Environment and utilities
+python-dotenv==1.0.0
+requests==2.31.0 
