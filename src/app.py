@@ -15,12 +15,12 @@ from src.data_ingestion import ingest_book
 load_dotenv()
 
 st.set_page_config(
-    page_title="Closed Book QA for R Bhargava & Associates",
+    page_title="Closed-Book QA with Gemini",
     page_icon="📚",
     layout="wide",
 )
 
-st.title("📚 Closed Book QA for R Bhargava & Associates")
+st.title("📚 Closed-Book QA with Gemini")
 
 # Initialize session state
 if "messages" not in st.session_state:
@@ -65,6 +65,7 @@ with st.sidebar:
             )
         st.success("Ingestion complete for both books.")
 
+
 # -----------------------------------------------------------------------------
 # Main Chat Interface
 # -----------------------------------------------------------------------------
@@ -107,7 +108,6 @@ if prompt := st.chat_input(f"Ask a question about {book_choice}..."):
                     st.write(
                         f"**Source {i+1}** | "
                         f"Chapter: `{meta.get('chapter', 'N/A')}` | "
-                        f"PDF Page (est.): `{meta.get('pdf_page', 'N/A')}` | "
                         f"Book ID: `{meta.get('book_id')}`"
                     )
                     st.info(doc.page_content)
@@ -122,21 +122,4 @@ if prompt := st.chat_input(f"Ask a question about {book_choice}..."):
                 "book_id": st.session_state.book_id,
             }
         )
-
-# --- Footer ---
-st.markdown("---")
-st.markdown(
-    """
-    <div style="text-align: center; color: grey; font-size: small;">
-        <p>
-            Made by Saksham Hooda<br>
-            <a href="https://linkedin.com/in/sakshamhooda" target="_blank">linkedin.com/in/sakshamhooda</a> || 
-            <a href="https://github.com/sakshamhooda" target="_blank">github.com/sakshamhooda</a><br>
-            +91-8222884855 || hooda.saksham@gmail.com
-        </p>
-        <p><b>For R Bhargava & Associates</b></p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
