@@ -1,0 +1,13 @@
+streamlit
+google-generativeai
+ebooklib
+beautifulsoup4
+unstructured
+langchain
+langchain-community
+langchain-google-genai
+faiss-cpu
+PyPDF2
+uv
+lxml
+python-dotenv
