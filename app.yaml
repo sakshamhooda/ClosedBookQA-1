@@ -1,0 +1,24 @@
+runtime: python311
+service: closed-book-qa
+
+env_variables:
+  GOOGLE_API_KEY: "your-google-api-key-here"
+
+automatic_scaling:
+  target_cpu_utilization: 0.6
+  min_instances: 1
+  max_instances: 10
+  target_concurrent_requests: 80
+
+resources:
+  cpu: 2
+  memory_gb: 2
+  disk_size_gb: 10
+
+handlers:
+  - url: /.*
+    script: auto
+    secure: always
+
+inbound_services:
+  - warmup 
