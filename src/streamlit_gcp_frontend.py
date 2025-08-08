@@ -6,7 +6,7 @@ from typing import Dict, Any, List
 import os
 
 # Configuration
-API_URL = os.getenv("API_URL", "http://localhost:8000")  # Change for GCP deployment
+API_URL = os.getenv("API_URL", "http://localhost:8000")  # Local API in same container
 
 # Page configuration
 st.set_page_config(

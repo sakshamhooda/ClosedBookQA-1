@@ -13,10 +13,10 @@ NC='\033[0m' # No Color
 
 # Configuration
 PROJECT_ID=$(gcloud config get-value project 2>/dev/null || echo "")
-REGION="us-central1"
+REGION="europe-west1"
 SERVICE_NAME="closed-book-qa"
 
-echo -e "${GREEN}🚀 GCP Deployment Script for Closed Book QA${NC}"
+echo -e "${GREEN}🚀 GCP Deployment Script for Closed Book QA (FastAPI + Streamlit)${NC}"
 echo "=================================================="
 
 # Check if gcloud is installed
