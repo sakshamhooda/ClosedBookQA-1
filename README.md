@@ -153,12 +153,146 @@ Notes:
 
 ## Running the App
 
+### Local Development
+
 ```bash
 source .venv/bin/activate
 streamlit run src/app.py
 ```
 
 Then open the local URL printed by Streamlit (usually `http://localhost:8501`).
+
+## Deployment
+
+### GCP Cloud Run Deployment (Recommended)
+
+The application is designed for deployment on Google Cloud Platform using Cloud Run. The deployment includes both FastAPI backend and Streamlit frontend in a single container for optimal performance and cost efficiency.
+
+#### Architecture
+
+```
+┌─────────────────────────────────────┐
+│         Single Container            │
+│  ┌─────────────┐ ┌─────────────┐   │
+│  │   FastAPI   │ │  Streamlit  │   │
+│  │   Port 8000 │ │  Port 8080  │   │
+│  └─────────────┘ └─────────────┘   │
+└─────────────────────────────────────┘
+```
+
+**Benefits:**
+- ✅ Single deployment - easier to manage
+- ✅ No CORS issues - same domain
+- ✅ Cost effective - one service instead of two
+- ✅ Faster package installation - using `uv`
+- ✅ Simplified architecture - everything in one place
+
+#### Prerequisites
+
+1. **Google Cloud SDK**: Install and configure gcloud CLI
+   ```bash
+   # Install gcloud CLI
+   curl https://sdk.cloud.google.com | bash
+   exec -l $SHELL
+   
+   # Authenticate
+   gcloud auth login
+   gcloud config set project YOUR_PROJECT_ID
+   ```
+
+2. **Enable Required APIs**:
+   ```bash
+   gcloud services enable cloudbuild.googleapis.com
+   gcloud services enable run.googleapis.com
+   gcloud services enable containerregistry.googleapis.com
+   ```
+
+3. **Set Environment Variables**:
+   ```bash
+   export GOOGLE_API_KEY="your-google-api-key-here"
+   ```
+
+#### Automated Deployment
+
+```bash
+# Deploy to GCP Cloud Run
+./deploy-gcp.sh
+```
+
+This script will:
+- Build the container with both FastAPI and Streamlit
+- Deploy to Cloud Run with optimized settings
+- Set up environment variables
+- Provide the deployment URL
+
+#### Manual Deployment
+
+```bash
+# Build and deploy
+gcloud builds submit --tag gcr.io/$PROJECT_ID/closedbook-qa-saksham
+gcloud run deploy closedbook-qa-saksham \
+    --image gcr.io/$PROJECT_ID/closedbook-qa-saksham \
+    --platform managed \
+    --region europe-west1 \
+    --allow-unauthenticated \
+    --memory 2Gi \
+    --cpu 2 \
+    --timeout 300 \
+    --set-env-vars GOOGLE_API_KEY="$GOOGLE_API_KEY"
+```
+
+#### Deployment Configuration
+
+| Service | CPU | Memory | Timeout | Concurrency |
+|---------|-----|--------|---------|-------------|
+| Cloud Run | 2 | 2Gi | 300s | 80 |
+
+#### API Endpoints
+
+After deployment, your service will be available at:
+- **Frontend**: `https://your-service-url` (Streamlit UI)
+- **API Health**: `https://your-service-url/api/health`
+- **Ask Question**: `https://your-service-url/api/ask`
+- **Available Books**: `https://your-service-url/api/books`
+
+#### Testing the Deployment
+
+```bash
+# Health check
+curl https://your-service-url/api/health
+
+# Test asking a question
+curl -X POST "https://your-service-url/api/ask" \
+     -H "Content-Type: application/json" \
+     -d '{"question":"What is a debt crisis?","book_id":"debt_crisis"}'
+```
+
+#### Monitoring
+
+```bash
+# View logs
+gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=closedbook-qa-saksham"
+
+# View metrics
+gcloud monitoring metrics list --filter="metric.type:run.googleapis.com"
+```
+
+#### Troubleshooting Deployment
+
+1. **Container Startup Issues**:
+   - Check logs: `gcloud run services logs read closedbook-qa-saksham`
+   - Verify environment variables are set correctly
+   - Ensure API key has proper permissions
+
+2. **Memory Issues**:
+   - Increase memory allocation in deployment configuration
+   - Monitor resource usage in Cloud Console
+
+3. **Timeout Issues**:
+   - Increase timeout in deployment configuration
+   - Optimize RAG pipeline performance
+
+For detailed GCP deployment documentation, see [README-GCP.md](README-GCP.md).
 
 
 ## Usage Guide
