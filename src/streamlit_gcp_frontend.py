@@ -37,6 +37,7 @@ st.markdown("""
     }
     .source-card {
         background-color: #f8f9fa;
+        color: #333;
         padding: 1rem;
         border-radius: 0.5rem;
         margin: 0.5rem 0;

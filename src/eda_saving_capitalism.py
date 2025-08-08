@@ -18,6 +18,8 @@ from nltk.corpus import stopwords
 import warnings
 import streamlit as st
 from wordcloud import WordCloud
+import matplotlib
+matplotlib.use('Agg')
 
 warnings.filterwarnings('ignore')
 
