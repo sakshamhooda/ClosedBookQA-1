@@ -18,6 +18,7 @@ ENV PYTHONPATH=/app
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements-gcp.txt
+RUN python -m nltk.downloader punkt stopwords
 
 # Copy application code
 COPY . .

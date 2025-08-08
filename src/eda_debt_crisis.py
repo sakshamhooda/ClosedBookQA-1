@@ -24,15 +24,6 @@ from wordcloud import WordCloud
 warnings.filterwarnings('ignore')
 
 def eda_big_debt_crisis():
-    # Download required NLTK data
-    try:
-        nltk.data.find('tokenizers/punkt')
-    except LookupError:
-        nltk.download('punkt')
-    try:
-        nltk.data.find('corpora/stopwords')
-    except LookupError:
-        nltk.download('stopwords')
 
     # Set up plotting style
     plt.style.use('seaborn-v0_8')
