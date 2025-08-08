@@ -4,6 +4,7 @@ import json
 import time
 from typing import Dict, Any, List
 import os
+from src.eda_page import show_eda_page
 
 # Configuration
 API_URL = os.getenv("API_URL", "http://localhost:8000")  # Local API in same container
@@ -80,7 +81,7 @@ with st.sidebar:
     st.subheader("📖 Book Selection")
     book_map = {
         "Big Debt Crisis by Ray Dalio": "debt_crisis",
-        "Saving Capitalism from the Capitalists": "capitalism",
+        "Saving Capitalism from the Capitalists by Raghuram Rajan": "capitalism",
     }
     book_choice = st.selectbox(
         "Choose a book:",
@@ -98,119 +99,131 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
 
-# Main Chat Interface
-st.header(f"💬 Querying: *{book_choice}*")
+    # View EDA
+    if st.button("📊 View EDA"):
+        st.query_params.page = "eda"
+        st.rerun()
 
-# Display chat history
-for message in st.session_state.messages:
-    if message.get("book_id") == st.session_state.book_id:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-            
-            # Display sources if available
-            if "sources" in message and message["sources"]:
-                with st.expander("📚 Sources"):
-                    for source in message["sources"]:
-                        st.markdown(f"""
-                        <div class="source-card">
-                            <strong>Source {source['rank']}</strong><br>
-                            <em>Chapter: {source['metadata'].get('chapter', 'N/A')}</em><br>
-                            <em>PDF Page: {source['metadata'].get('pdf_page', 'N/A')}</em><br>
-                            <em>Book ID: {source['metadata'].get('book_id', 'N/A')}</em>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        st.info(source["content"])
-            
-            # Display processing time if available
-            if "processing_time" in message:
-                st.caption(f"⏱️ Processing time: {message['processing_time']:.2f}s")
+# Main app logic
+query_params = st.query_params
+page = st.query_params.get("page")
 
-# Handle new user input
-if prompt := st.chat_input(f"Ask a question about {book_choice}..."):
-    # Add user message to history
-    st.session_state.messages.append(
-        {"role": "user", "content": prompt, "book_id": st.session_state.book_id}
-    )
-    with st.chat_message("user"):
-        st.markdown(prompt)
+if page == "eda":
+    show_eda_page()
+else:
+    # Main Chat Interface
+    st.header(f"💬 Querying: *{book_choice}*")
 
-    # Generate and display assistant response
-    with st.chat_message("assistant"):
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        
-        try:
-            # Step 1: Prepare request
-            status_text.text("🔄 Preparing request...")
-            progress_bar.progress(25)
-            
-            request_data = {
-                "question": prompt,
-                "book_id": st.session_state.book_id
-            }
-            
-            # Step 2: Send request to API
-            status_text.text("🚀 Sending request to API...")
-            progress_bar.progress(50)
-            
-            response = requests.post(
-                f"{API_URL}/api/ask",
-                json=request_data,
-                timeout=60  # 60 second timeout
-            )
-            
-            progress_bar.progress(75)
-            
-            if response.status_code == 200:
-                data = response.json()
+    # Display chat history
+    for message in st.session_state.messages:
+        if message.get("book_id") == st.session_state.book_id:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
                 
-                # Display answer
-                if data["status"] == "success":
-                    st.markdown(data["answer"])
+                # Display sources if available
+                if "sources" in message and message["sources"]:
+                    with st.expander("📚 Sources"):
+                        for source in message["sources"]:
+                            st.markdown(f"""
+                            <div class="source-card">
+                                <strong>Source {source['rank']}</strong><br>
+                                <em>Chapter: {source['metadata'].get('chapter', 'N/A')}</em><br>
+                                <em>PDF Page: {source['metadata'].get('pdf_page', 'N/A')}</em><br>
+                                <em>Book ID: {source['metadata'].get('book_id', 'N/A')}</em><br>
+                                <p>Content: {source['content']}</p>
+                            </div>
+                            """, unsafe_allow_html=True)
+                
+                # Display processing time if available
+                if "processing_time" in message:
+                    st.caption(f"⏱️ Processing time: {message['processing_time']:.2f}s")
+
+    # Handle new user input
+    if prompt := st.chat_input(f"Ask a question about {book_choice}..."):
+        # Add user message to history
+        st.session_state.messages.append(
+            {"role": "user", "content": prompt, "book_id": st.session_state.book_id}
+        )
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # Generate and display assistant response
+        with st.chat_message("assistant"):
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            try:
+                # Step 1: Prepare request
+                status_text.text("🔄 Preparing request...")
+                progress_bar.progress(25)
+                
+                request_data = {
+                    "question": prompt,
+                    "book_id": st.session_state.book_id
+                }
+                
+                # Step 2: Send request to API
+                status_text.text("🚀 Sending request to API...")
+                progress_bar.progress(50)
+                
+                response = requests.post(
+                    f"{API_URL}/api/ask",
+                    json=request_data,
+                    timeout=60  # 60 second timeout
+                )
+                
+                progress_bar.progress(75)
+                
+                if response.status_code == 200:
+                    data = response.json()
                     
-                    # Display sources
-                    if data["sources"]:
-                        with st.expander("📚 Sources"):
-                            for source in data["sources"]:
-                                st.markdown(f"""
-                                <div class="source-card">
-                                    <strong>Source {source['rank']}</strong><br>
-                                    <em>Chapter: {source['metadata'].get('chapter', 'N/A')}</em><br>
-                                    <em>PDF Page: {source['metadata'].get('pdf_page', 'N/A')}</em><br>
-                                    <em>Book ID: {source['metadata'].get('book_id', 'N/A')}</em>
-                                </div>
-                                """, unsafe_allow_html=True)
-                                st.info(source["content"])
-                    
-                    # Display processing time
-                    st.caption(f"⏱️ Processing time: {data['processing_time']:.2f}s")
-                    
-                    # Add assistant message to history
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": data["answer"],
-                        "sources": data["sources"],
-                        "processing_time": data["processing_time"],
-                        "book_id": st.session_state.book_id,
-                    })
+                    # Display answer
+                    if data["status"] == "success":
+                        st.markdown(data["answer"])
+                        
+                        # Display sources
+                        if data["sources"]:
+                            with st.expander("📚 Sources"):
+                                for source in data["sources"]:
+                                    st.markdown(f"""
+                                    <div class="source-card">
+                                        <strong>Source {source['rank']}</strong><br>
+                                        <em>Chapter: {source['metadata'].get('chapter', 'N/A')}</em><br>
+                                        <em>PDF Page: {source['metadata'].get('pdf_page', 'N/A')}</em><br>
+                                        <em>Book ID: {source['metadata'].get('book_id', 'N/A')}</em><br>
+                                        <p>Content: {source['content']}</p>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                        
+                        # Display processing time
+                        st.caption(f"⏱️ Processing time: {data['processing_time']:.2f}s")
+                        
+                        # Add assistant message to history
+                        st.session_state.messages.append({
+                            "role": "assistant",
+                            "content": data["answer"],
+                            "sources": data["sources"],
+                            "processing_time": data["processing_time"],
+                            "book_id": st.session_state.book_id,
+                        })
+                    else:
+                        st.error(f"❌ API returned error: {data['answer']}")
+                        
                 else:
-                    st.error(f"❌ API returned error: {data['answer']}")
+                    st.error(f"❌ API Error ({response.status_code}): {response.text}")
                     
-            else:
-                st.error(f"❌ API Error ({response.status_code}): {response.text}")
-                
-        except requests.exceptions.Timeout:
-            st.error("⏰ Request timed out. Please try again.")
-        except requests.exceptions.ConnectionError:
-            st.error("🔌 Cannot connect to API. Please check the API URL and try again.")
-        except Exception as e:
-            st.error(f"❌ Error: {str(e)}")
-        finally:
-            progress_bar.progress(100)
-            status_text.text("✅ Complete!")
-            time.sleep(0.5)
-            progress_bar.empty()
-            status_text.empty()
+            except requests.exceptions.Timeout:
+                st.error("⏰ Request timed out. Please try again.")
+            except requests.exceptions.ConnectionError:
+                st.error("🔌 Cannot connect to API. Please check the API URL and try again.")
+            except Exception as e:
+                st.error(f"❌ Error: {str(e)}")
+            finally:
+                progress_bar.progress(100)
+                status_text.text("✅ Complete!")
+                time.sleep(0.5)
+                progress_bar.empty()
+                status_text.empty()
 
 # Footer
 st.markdown("---")
@@ -228,4 +241,4 @@ st.markdown(
     </div>
     """,
     unsafe_allow_html=True
-) 
+)
