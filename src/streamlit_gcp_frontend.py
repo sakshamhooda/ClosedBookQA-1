@@ -110,7 +110,7 @@ query_params = st.query_params
 page = st.query_params.get("page")
 
 if page == "eda":
-    show_eda_page()
+    show_eda_page(mode='gcp')
 else:
     # Main Chat Interface
     st.header(f"💬 Querying: *{book_choice}*")

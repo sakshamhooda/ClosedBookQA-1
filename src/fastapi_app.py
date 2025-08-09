@@ -15,6 +15,7 @@ from functools import lru_cache
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.rag import retrieve, generate_answer
+from src.api_eda_logic import generate_eda_data
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.schema import Document
@@ -53,6 +54,13 @@ class HealthResponse(BaseModel):
     status: str
     vector_stores_loaded: List[str]
     embeddings_model_loaded: bool
+
+class EdaResponse(BaseModel):
+    status: str
+    word_cloud_image: Optional[str] = None
+    frequency_plots_image: Optional[str] = None
+    summary_stats: Optional[Dict[str, Any]] = None
+    message: Optional[str] = None
 
 # Global cache for expensive resources
 vector_stores = {}
@@ -98,6 +106,33 @@ async def startup_event():
                 
     except Exception as e:
         print(f"❌ Startup error: {e}")
+
+@app.get("/api/eda/{book_id}", response_model=EdaResponse)
+async def get_eda(book_id: str, background_tasks: BackgroundTasks):
+    """
+    Asynchronously generates and returns EDA data and visualizations for a given book.
+    """
+    start_time = time.time()
+    
+    if book_id not in ["debt_crisis", "capitalism"]:
+        raise HTTPException(status_code=400, detail="Invalid book_id")
+    
+    try:
+        # Run the CPU-bound EDA generation in a background thread
+        eda_data = await asyncio.to_thread(generate_eda_data, book_id)
+        
+        if eda_data["status"] == "success":
+            return EdaResponse(
+                status="success",
+                word_cloud_image=eda_data["word_cloud_image"],
+                frequency_plots_image=eda_data["frequency_plots_image"],
+                summary_stats=eda_data["summary_stats"]
+            )
+        else:
+            raise HTTPException(status_code=500, detail=eda_data.get("message", "Unknown error in EDA generation"))
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate EDA data: {str(e)}")
 
 @app.post("/api/ask", response_model=QuestionResponse)
 async def ask_question(request: QuestionRequest):
