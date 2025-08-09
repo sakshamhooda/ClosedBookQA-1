@@ -15,7 +15,6 @@ from functools import lru_cache
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.rag import retrieve, generate_answer
-from src.api_eda_logic import generate_eda_data
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.schema import Document
@@ -55,13 +54,6 @@ class HealthResponse(BaseModel):
     vector_stores_loaded: List[str]
     embeddings_model_loaded: bool
 
-class EdaResponse(BaseModel):
-    status: str
-    word_cloud_image: Optional[str] = None
-    frequency_plots_image: Optional[str] = None
-    summary_stats: Optional[Dict[str, Any]] = None
-    message: Optional[str] = None
-
 # Global cache for expensive resources
 vector_stores = {}
 embeddings_model = None
@@ -88,43 +80,24 @@ def get_vector_store(book_id: str) -> FAISS:
 @app.on_event("startup")
 async def startup_event():
     """Initialize expensive resources on startup."""
-    global embeddings_model
+    global embeddings_model, vector_stores
     
     try:
-        # Initialize embeddings model once. Vector stores will be loaded on-demand.
+        # Initialize embeddings model once
         embeddings_model = get_embeddings()
         print("✅ Embeddings model loaded successfully")
-        print("ℹ️ Vector stores will be loaded on first request for each book.")
+        
+        # Pre-load vector stores
+        book_ids = ["debt_crisis", "capitalism"]
+        for book_id in book_ids:
+            try:
+                get_vector_store(book_id)
+                print(f"✅ Vector store loaded for {book_id}")
+            except Exception as e:
+                print(f"❌ Failed to load vector store for {book_id}: {e}")
                 
     except Exception as e:
-        print(f"❌ Startup error while loading embeddings model: {e}")
-
-@app.get("/api/eda/{book_id}", response_model=EdaResponse)
-async def get_eda(book_id: str, background_tasks: BackgroundTasks):
-    """
-    Asynchronously generates and returns EDA data and visualizations for a given book.
-    """
-    start_time = time.time()
-    
-    if book_id not in ["debt_crisis", "capitalism"]:
-        raise HTTPException(status_code=400, detail="Invalid book_id")
-    
-    try:
-        # Run the CPU-bound EDA generation in a background thread
-        eda_data = await asyncio.to_thread(generate_eda_data, book_id)
-        
-        if eda_data["status"] == "success":
-            return EdaResponse(
-                status="success",
-                word_cloud_image=eda_data["word_cloud_image"],
-                frequency_plots_image=eda_data["frequency_plots_image"],
-                summary_stats=eda_data["summary_stats"]
-            )
-        else:
-            raise HTTPException(status_code=500, detail=eda_data.get("message", "Unknown error in EDA generation"))
-            
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate EDA data: {str(e)}")
+        print(f"❌ Startup error: {e}")
 
 @app.post("/api/ask", response_model=QuestionResponse)
 async def ask_question(request: QuestionRequest):

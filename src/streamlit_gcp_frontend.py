@@ -7,7 +7,7 @@ import os
 from src.eda_page import show_eda_page
 
 # Configuration
-API_URL = os.getenv("API_URL", "http://localhost:8000")  # Connect to internal backend
+API_URL = os.getenv("API_URL", "http://localhost:8000")  # Local API in same container
 
 # Page configuration
 st.set_page_config(
@@ -110,7 +110,7 @@ query_params = st.query_params
 page = st.query_params.get("page")
 
 if page == "eda":
-    show_eda_page(mode='gcp')
+    show_eda_page()
 else:
     # Main Chat Interface
     st.header(f"💬 Querying: *{book_choice}*")
