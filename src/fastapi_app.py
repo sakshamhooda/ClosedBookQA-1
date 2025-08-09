@@ -88,24 +88,16 @@ def get_vector_store(book_id: str) -> FAISS:
 @app.on_event("startup")
 async def startup_event():
     """Initialize expensive resources on startup."""
-    global embeddings_model, vector_stores
+    global embeddings_model
     
     try:
-        # Initialize embeddings model once
+        # Initialize embeddings model once. Vector stores will be loaded on-demand.
         embeddings_model = get_embeddings()
         print("✅ Embeddings model loaded successfully")
-        
-        # Pre-load vector stores
-        book_ids = ["debt_crisis", "capitalism"]
-        for book_id in book_ids:
-            try:
-                get_vector_store(book_id)
-                print(f"✅ Vector store loaded for {book_id}")
-            except Exception as e:
-                print(f"❌ Failed to load vector store for {book_id}: {e}")
+        print("ℹ️ Vector stores will be loaded on first request for each book.")
                 
     except Exception as e:
-        print(f"❌ Startup error: {e}")
+        print(f"❌ Startup error while loading embeddings model: {e}")
 
 @app.get("/api/eda/{book_id}", response_model=EdaResponse)
 async def get_eda(book_id: str, background_tasks: BackgroundTasks):

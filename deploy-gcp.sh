@@ -9,7 +9,7 @@ set -e
 # --- Configuration ---
 PROJECT_ID=$(gcloud config get-value project 2>/dev/null || echo "")
 REGION="europe-west1"
-SERVICE_NAME="closedbook-qa"
+SERVICE_NAME="closedbook-qa-saksham"
 
 # --- Colors for output ---
 RED='\033[0;31m'
@@ -47,6 +47,7 @@ deploy_cloud_run() {
     # Deploy to Cloud Run
     gcloud run deploy $SERVICE_NAME \
         --image gcr.io/$PROJECT_ID/$SERVICE_NAME \
+        --port 8080 \
         --platform managed \
         --region $REGION \
         --allow-unauthenticated \
