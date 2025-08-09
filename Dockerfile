@@ -26,22 +26,22 @@ COPY . .
 
 # Create startup script for both services
 RUN echo '#!/bin/bash \n\
-# Start FastAPI in background on port 8000 \n\
+# Start FastAPI in background on internal port 8000 \n\
 uvicorn src.fastapi_app:app --host 0.0.0.0 --port 8000 & \n\
-# Start Streamlit in foreground on port 8080 (main process) \n\
-streamlit run src/streamlit_gcp_frontend.py --server.port 8080 --server.address 0.0.0.0' > /app/start.sh && chmod +x /app/start.sh
+# Start Streamlit in foreground on public port 8080 \n\
+streamlit run src.streamlit_gcp_frontend.py --server.port 8080 --server.address 0.0.0.0' > /app/start.sh && chmod +x /app/start.sh
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash app \
     && chown -R app:app /app
 USER app
 
-# Expose port
-EXPOSE 8080
+# Expose both ports for clarity, though only 8080 will be routed by Cloud Run
+EXPOSE 8080 8000
 
-# Health check
+# Health check for Streamlit (the public-facing service)
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/ || exit 1
+    CMD curl -f http://localhost:8080/_stcore/health || exit 1
 
 # Run the startup script
 CMD ["/app/start.sh"] 

@@ -7,7 +7,7 @@ import os
 from src.eda_page import show_eda_page
 
 # Configuration
-API_URL = os.getenv("API_URL", "http://localhost:8000")  # Backend runs on 8000 in the container
+API_URL = os.getenv("API_URL", "http://localhost:8000")  # Connect to internal backend
 
 # Page configuration
 st.set_page_config(
