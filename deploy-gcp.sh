@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 # Configuration
 PROJECT_ID=$(gcloud config get-value project 2>/dev/null || echo "")
 REGION="europe-west1"
-SERVICE_NAME="closed-book-qa"
+SERVICE_NAME="closedbook-qa-saksham"
 
 echo -e "${GREEN}🚀 GCP Deployment Script for Closed Book QA (FastAPI + Streamlit)${NC}"
 echo "=================================================="

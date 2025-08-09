@@ -7,7 +7,7 @@ import os
 from src.eda_page import show_eda_page
 
 # Configuration
-API_URL = os.getenv("API_URL", "http://localhost:8080")  # Default to 8080 for GCP
+API_URL = os.getenv("API_URL", "http://localhost:8000")  # Backend runs on 8000 in the container
 
 # Page configuration
 st.set_page_config(

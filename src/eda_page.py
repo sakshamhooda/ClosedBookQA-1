@@ -5,7 +5,7 @@ from src.eda_debt_crisis import eda_big_debt_crisis
 from src.eda_saving_capitalism import eda_saving_capitalism
 import os
 
-API_URL = os.getenv("API_URL", "http://localhost:8080")
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 def show_eda_page(mode='local'):
     """
