@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -15,6 +15,7 @@ from functools import lru_cache
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.rag import retrieve, generate_answer
+from src.eda_api import compute_eda_summary
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.schema import Document
@@ -181,6 +182,23 @@ async def get_available_books():
             }
         ]
     }
+
+
+@app.get("/api/eda/summary")
+async def eda_summary(
+    book_id: str = Query(..., pattern="^(debt_crisis|capitalism)$"),
+    include_wordcloud: bool = Query(True),
+):
+    """Return a computed EDA summary for the requested book.
+
+    This endpoint offloads EDA computation to the backend to avoid heavy
+    operations in the Streamlit frontend on Cloud Run.
+    """
+    try:
+        summary = compute_eda_summary(book_id, include_wordcloud)
+        return summary
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"EDA computation failed: {str(e)}")
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

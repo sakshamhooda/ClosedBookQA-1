@@ -110,7 +110,8 @@ query_params = st.query_params
 page = st.query_params.get("page")
 
 if page == "eda":
-    show_eda_page()
+    # Use API-backed EDA on GCP to prevent heavy compute in the UI process
+    show_eda_page(use_api=True, api_url=API_URL)
 else:
     # Main Chat Interface
     st.header(f"💬 Querying: *{book_choice}*")
