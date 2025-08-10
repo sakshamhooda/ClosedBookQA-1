@@ -154,7 +154,7 @@ if prompt := st.chat_input(f"Ask a question about {book_choice}..."):
             }
             
             # Step 2: Send request to API
-            status_text.text("🚀 Sending request to API...")
+            status_text.text("🚀 Sending request to Backend Server...")
             progress_bar.progress(50)
             
             response = requests.post(

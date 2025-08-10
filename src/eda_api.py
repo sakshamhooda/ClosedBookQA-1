@@ -11,6 +11,7 @@ from typing import Dict, List, Tuple, Any
 from bs4 import BeautifulSoup
 from ebooklib import epub
 from wordcloud import WordCloud
+import numpy as np
 
 
 STOPWORDS = {
@@ -57,6 +58,14 @@ def _extract_texts(epub_path: Path) -> Tuple[str, List[Dict[str, Any]]]:
     return all_text, chapter_info
 
 
+def _split_sentences(all_text: str) -> List[str]:
+    # Simple sentence splitter to avoid heavy NLTK dependency
+    # Splits on ., !, ? followed by whitespace
+    parts = re.split(r"(?<=[\.!\?])\s+", all_text)
+    # Filter out very short fragments
+    return [p.strip() for p in parts if len(p.strip()) > 0]
+
+
 def _compute_stats(all_text: str, chapter_info: List[Dict[str, Any]]) -> Dict[str, Any]:
     words = _simple_tokenize(all_text)
     words_no_stop = [w for w in words if w.isalpha() and w not in STOPWORDS]
@@ -73,6 +82,13 @@ def _compute_stats(all_text: str, chapter_info: List[Dict[str, Any]]) -> Dict[st
     top_words_no_stop = word_freq_no_stop.most_common(20)
     top_bigrams = bigram_freq.most_common(15)
 
+    # Sentence length distribution (approx)
+    sentences = _split_sentences(all_text)
+    sentence_lengths = [len(_simple_tokenize(s)) for s in sentences]
+    # Histogram bins similar to notebook style (0-600 words)
+    bin_edges = list(range(0, 601, 10))
+    counts, edges = np.histogram(sentence_lengths, bins=bin_edges)
+
     return {
         "total_words": len(words),
         "unique_words": len(set(words)),
@@ -82,6 +98,10 @@ def _compute_stats(all_text: str, chapter_info: List[Dict[str, Any]]) -> Dict[st
         "top_bigrams": top_bigrams,
         "chapter_info": chapter_info,
         "words_no_stopwords": words_no_stop,  # used for wordcloud
+        "sentence_length_hist": {
+            "bin_edges": bin_edges,
+            "counts": counts.tolist(),
+        },
     }
 
 
@@ -112,6 +132,7 @@ def compute_eda_summary(book_id: str, include_wordcloud: bool = True) -> Dict[st
         "top_words": stats["top_words"],
         "top_words_no_stopwords": stats["top_words_no_stopwords"],
         "top_bigrams": stats["top_bigrams"],
+        "sentence_length_hist": stats["sentence_length_hist"],
     }
 
     if include_wordcloud:
