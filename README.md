@@ -7,8 +7,10 @@ End‑to‑end, closed‑book RAG Question Answering app over two economics book
 
 The system builds isolated FAISS indexes per book, retrieves grounded passages, and uses Google Gemini to generate and verify answers. A Streamlit UI lets users query a selected book and view sources with chapter and approximate PDF page references.
 
-<span style="color: orange; font-weight=bold;">UPDATE | 19.08.2025: I've stalled deployment from GCP due to cost reasons. Demo shall not be accessible through the stated link anymore. Please follow the instructions related to the Dockerfile to deploy your image instance.</span>
-
+> [!WARNING]
+> **UPDATE | 19.08.2025:** I've stalled deployment from GCP due to cost reasons.  
+> Demo shall not be accessible through the stated link anymore.  
+> Please follow the instructions related to the Dockerfile to deploy your image instance.
 
 
 ## Table of Contents
